@@ -1,6 +1,6 @@
 // Offline support: cache the app shell, serve from cache first, refresh in the background.
 // Bump VERSION whenever any file changes.
-const VERSION = 'pip-chess-v1';
+const VERSION = 'pip-chess-v2';
 const FILES = [
   './',
   'index.html',

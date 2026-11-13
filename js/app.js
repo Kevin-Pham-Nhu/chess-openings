@@ -8,6 +8,7 @@
   const PIECE_NAMES = { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' };
   const STAR_LABELS = ['', 'Dubious', 'Risky', 'Good', 'Excellent', 'Top tier'];
   const DIFF_CLASS = ['easy', 'medium', 'hard', 'vhard'];
+  const GAMBIT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2L5 13.5h5.5L9.5 22 19 9.5h-6z" fill="currentColor"/></svg>';
 
   /* ───────── helpers ───────── */
 
@@ -58,8 +59,8 @@
       this.data.progress[id] = { ...this.get(id), ...patch };
       this.save();
     },
-    get side() { return this.data.side === 'b' ? 'b' : 'w'; },
-    set side(v) { this.data.side = v; this.save(); },
+    get tab() { return ['w', 'b', 'g'].includes(this.data.tab) ? this.data.tab : 'w'; },
+    set tab(v) { this.data.tab = v; this.save(); },
     save() {
       try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch { /* private mode: progress lasts for this visit only */ }
     },
@@ -373,32 +374,36 @@
   let homeScroll = 0;
 
   function renderHome(direction) {
-    const side = store.side;
+    const tab = store.tab;
     const learned = OPENINGS.filter((o) => store.get(o.id).learned).length;
 
-    const seg = h('div', { class: 'segmented', role: 'tablist', 'aria-label': 'Which colour do you want to play?' },
-      ...[['w', 'Play White'], ['b', 'Play Black']].map(([s, label]) =>
+    const seg = h('div', { class: 'segmented', role: 'tablist', 'aria-label': 'Choose a course list' },
+      ...[['w', 'White', pieceSVG('w', 'k')], ['b', 'Black', pieceSVG('b', 'k')], ['g', 'Gambits', GAMBIT_ICON]].map(([t, label, icon]) =>
         h('button', {
-          class: 'seg' + (s === side ? ' on' : ''), role: 'tab', 'aria-selected': String(s === side),
-          html: pieceSVG(s, 'k') + `<span>${label}</span>`,
-          onclick: () => { if (store.side !== s) { store.side = s; homeScroll = 0; renderHome(); } },
+          class: 'seg' + (t === tab ? ' on' : ''), role: 'tab', 'aria-selected': String(t === tab),
+          html: icon + `<span>${label}</span>`,
+          onclick: () => { if (store.tab !== t) { store.tab = t; homeScroll = 0; renderHome(); } },
         })));
 
-    const sections = [];
-    const jump = h('nav', { class: 'tier-nav', 'aria-label': 'Jump to level' });
+    // Each tab is a list of groups: Elo levels for White and Black, colours for Gambits.
+    const groups = tab === 'g'
+      ? [
+        { name: 'Gambits for White', pill: 'You play White', blurb: 'Give up a pawn or two early to open lines and attack before Black is ready.', list: OPENINGS.filter((o) => o.gambit && o.side === 'w'), jump: 'For White' },
+        { name: 'Gambits for Black', pill: 'You play Black', blurb: 'Counter-gambits that grab the initiative from White, from sound to downright cheeky.', list: OPENINGS.filter((o) => o.gambit && o.side === 'b'), jump: 'For Black' },
+      ]
+      : TIERS.map((tier, t) => ({ name: tier.name, pill: 'Elo ' + tier.elo, blurb: tier.blurb, list: OPENINGS.filter((o) => o.side === tab && o.tier === t), jump: tier.name }));
 
-    TIERS.forEach((tier, t) => {
-      const list = OPENINGS.filter((o) => o.side === side && o.tier === t);
-      if (!list.length) return;
+    const sections = [];
+    const jump = h('nav', { class: 'tier-nav', 'aria-label': 'Jump to section' });
+    for (const g of groups) {
+      if (!g.list.length) continue;
       const section = h('section', { class: 'tier' },
-        h('div', { class: 'tier-head' },
-          h('h2', {}, tier.name),
-          h('span', { class: 'elo' }, 'Elo ' + tier.elo)),
-        h('p', { class: 'tier-blurb' }, tier.blurb),
-        h('div', { class: 'cards' }, ...list.map(card)));
+        h('div', { class: 'tier-head' }, h('h2', {}, g.name), h('span', { class: 'elo' }, g.pill)),
+        h('p', { class: 'tier-blurb' }, g.blurb),
+        h('div', { class: 'cards' }, ...g.list.map((o) => card(o, tab === 'g'))));
       sections.push(section);
-      jump.append(h('button', { class: 'jump', onclick: () => section.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, tier.name));
-    });
+      jump.append(h('button', { class: 'jump', onclick: () => section.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, g.jump));
+    }
 
     const view = h('main', { class: 'home' },
       h('header', { class: 'hero' },
@@ -409,6 +414,7 @@
             ? `Welcome back! You've learned ${learned} of ${OPENINGS.length} openings.`
             : "Hi, I'm Pip. Pick an opening and I'll explain every move."))),
       h('div', { class: 'sticky-bar' }, seg, jump),
+      tab === 'g' && h('p', { class: 'intro' }, 'A gambit gives up material, usually a pawn, in return for fast development and attacking chances. The stars tell you how well each one holds up against good defence.'),
       ...sections,
       h('p', { class: 'footnote' }, 'Star ratings and Elo groups are a guide to how sound and how popular each opening is at that level, not a strict rule. Play what you enjoy.'));
 
@@ -417,7 +423,7 @@
     view.addEventListener('scroll', () => { homeScroll = view.scrollTop; }, { passive: true });
   }
 
-  function card(o) {
+  function card(o, inGambits) {
     const p = store.get(o.id);
     const badge = p.best === 1 ? 'Mastered' : p.learned ? 'Learned' : '';
     return h('button', { class: 'card', onclick: () => renderDetail(o, 'forward') },
@@ -425,7 +431,7 @@
       h('div', { class: 'card-body' },
         h('div', { class: 'card-title' }, o.name),
         h('p', { class: 'card-tag' }, o.tagline),
-        h('div', { class: 'card-meta', html: stars(o.stars) + diffChip(o.difficulty) + (badge ? `<span class="chip done">✓ ${badge}</span>` : '') })));
+        h('div', { class: 'card-meta', html: stars(o.stars) + diffChip(o.difficulty) + (inGambits ? `<span class="chip">${TIERS[o.tier].name}</span>` : o.gambit ? '<span class="chip gambit">Gambit</span>' : '') + (badge ? `<span class="chip done">✓ ${badge}</span>` : '') })));
   }
 
   /* ───────── screen: opening detail ───────── */
@@ -442,7 +448,7 @@
           h('span', { class: 'chev', html: '<svg viewBox="0 0 12 20"><path d="M10 2L2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' }), 'Openings')),
       h('div', { class: 'preview' }, boardEl, caption),
       h('div', { class: 'detail-head' },
-        h('p', { class: 'eyebrow' }, `${o.side === 'w' ? 'You play White' : 'You play Black'} · ECO ${o.eco}`),
+        h('p', { class: 'eyebrow' }, `${o.side === 'w' ? 'You play White' : 'You play Black'}${o.gambit ? ' · Gambit' : ''} · ECO ${o.eco}`),
         h('h1', {}, o.name),
         h('p', { class: 'lede' }, o.tagline)),
       h('div', { class: 'facts' },
@@ -504,8 +510,8 @@
         counter),
       h('div', { class: 'lesson-title' }, h('strong', {}, o.name), h('span', { class: 'chip mode' }, mode === 'learn' ? 'Learn' : 'Practice')),
       h('div', { class: 'lesson-board' }, boardEl),
-      h('div', { class: 'coach' }, pipEl, h('div', { class: 'bubble', 'aria-live': 'polite' }, tagEl, textEl, promptEl)),
-      actions);
+      actions,
+      h('div', { class: 'coach' }, pipEl, h('div', { class: 'bubble', 'aria-live': 'polite' }, tagEl, textEl, promptEl)));
 
     show(view, 'forward');
     const board = new Board(boardEl, { orientation: user, userColor: user, onAttempt });

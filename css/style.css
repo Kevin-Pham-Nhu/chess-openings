@@ -137,6 +137,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .chip.diff.medium { color: var(--medium); }
 .chip.diff.hard { color: var(--hard); }
 .chip.diff.vhard { color: var(--vhard); }
+.chip.gambit { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--medium); }
 .chip.done { background: var(--good-soft); color: var(--good); }
 .chip.mode { background: var(--accent-soft); color: var(--accent); }
 .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
@@ -194,12 +195,13 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   background: color-mix(in srgb, var(--bg) 86%, transparent);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
 }
-.segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 16px; background: var(--surface-2); }
 .seg {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   min-height: 44px; border-radius: 12px; font-weight: 700; color: var(--muted);
 }
-.seg svg { width: 26px; height: 26px; }
+.seg svg { flex: none; width: 24px; height: 24px; }
+.seg svg[viewBox="0 0 24 24"] { width: 18px; height: 18px; color: var(--gold); }
 .seg.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 
 .tier-nav { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--gutter-r) * -1) 0 calc(var(--gutter-l) * -1); padding: 0 var(--gutter-r) 0 var(--gutter-l); }
@@ -211,6 +213,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .tier-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .tier h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
 .elo { font-size: 13px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.intro { font-size: 15px; padding: 12px 14px; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
 .tier-blurb { color: var(--muted); font-size: 15px; }
 .cards { display: grid; gap: 10px; margin-top: 8px; }
 
@@ -298,7 +301,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .lesson-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; }
 .lesson-board { flex: none; width: min(100%, calc(100dvh - var(--sat) - var(--sab) - 350px)); min-width: 220px; margin: 0 auto; }
 
-.coach { flex: 1; min-height: 0; display: flex; align-items: flex-start; gap: 10px; padding-top: 4px; }
+.coach { flex: 1; min-height: 0; display: flex; align-items: flex-start; gap: 10px; padding-bottom: 14px; }
 .coach-pip { flex: none; width: 52px; margin-top: 6px; }
 .bubble {
   flex: 1; min-width: 0; max-height: 100%; overflow-y: auto;
@@ -312,7 +315,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .prompt { font-size: 15.5px; font-weight: 600; padding-top: 8px; border-top: 1.5px dashed var(--line); }
 .prompt b { color: var(--accent); font-weight: 800; font-size: 17px; }
 .say { color: var(--muted); font-weight: 500; }
-.actions { flex: none; min-height: 52px; display: grid; align-items: center; padding-bottom: 14px; }
+.actions { flex: none; width: min(100%, 420px); min-height: 52px; margin: 0 auto; display: grid; align-items: center; }
 .tip { text-align: center; font-size: 14px; color: var(--muted); }
 
 /* ───── done ───── */

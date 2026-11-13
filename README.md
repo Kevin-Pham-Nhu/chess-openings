@@ -2,7 +2,8 @@
 
 An iPhone-first app for learning chess openings. Pip, a small pawn, walks you through each opening one move at a time and explains why every move is good.
 
-- **24 courses**: 12 to play as White, 12 to play as Black.
+- **35 courses**: 17 to play as White, 18 to play as Black.
+- **A Gambits section** with pawn sacrifices for both colours, from the sound (Marshall Attack) to the cheeky (Englund Gambit).
 - **Grouped by Elo**, from Beginner (under 1000) to Grandmaster (2400+), so you can see what is commonly played at each level.
 - **Every opening shows** a board preview, a short history, a 1–5 star strength rating and a study difficulty (Easy, Medium, Hard, Very hard).
 - **Learn mode** shows the move with an arrow and explains it. **Practice mode** asks you to play the line from memory, with hints if you get stuck.
@@ -26,7 +27,7 @@ It is a web app that installs to the home screen and then runs full screen like 
 
 ## Adding or editing openings
 
-All content lives in `js/data/openings.js`. Each opening has a `side` (`w` or `b`), `tier` (Elo group), `stars`, `difficulty`, `tagline`, `history`, `ideas`, and `moves`: a list of `[move, explanation]` pairs in standard notation, starting from move one.
+All content lives in `js/data/openings.js`. Each opening has a `side` (`w` or `b`), `tier` (Elo group), `stars`, `difficulty`, optional `gambit: true` (also lists it under Gambits), `tagline`, `history`, `ideas`, and `moves`: a list of `[move, explanation]` pairs in standard notation, starting from move one.
 
 After editing, check that every line is legal:
 
